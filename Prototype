@@ -1,0 +1,66 @@
+import speech_recognition as sr
+import threading
+import openai
+import keyboard
+
+#use api key in discord announcments
+openai.api_key = "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"
+
+def start_recording():
+    global audio
+    print("Say something!")
+    with sr.Microphone() as source:
+        audio = r.listen(source)
+    print("Recording done. Typing...")
+    process_audio()
+
+def process_audio():
+    global recorded_text
+    try:
+        recorded_text = r.recognize_google(audio)
+        print(f"You said: {recorded_text}")
+        openai_chat()  
+    except sr.UnknownValueError:
+        print("Sorry, I could not understand what you said.")
+    except sr.RequestError as e:
+        print(f"Could not request results from Google Speech Recognition service; {e}")
+
+def openai_chat():
+    print("Continuing the conversation with OpenAI:")
+    user_input = input("You: ") 
+    conversation = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": recorded_text},
+        {"role": "user", "content": user_input}
+    ]
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo", 
+        messages=conversation
+    )
+    print("AI:", response.choices[0].message['content'])
+    
+
+def on_key_1(event):
+    if event.name == "1" and event.event_type == keyboard.KEY_DOWN:
+        start_recording_thread = threading.Thread(target=start_recording)
+        start_recording_thread.start()
+
+r = sr.Recognizer()
+audio = None
+
+keyboard.hook(on_key_1)
+
+print("Press the '1' key to start recording.")
+
+keyboard.wait('esc') 
+
+r = sr.Recognizer()
+audio = None
+recorded_text = ""
+
+start_recording_thread = threading.Thread(target=start_recording)
+start_recording_thread.start()
+
+start_recording_thread.join()  
+
+keyboard.unhook_all()  
