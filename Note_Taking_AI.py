@@ -5,7 +5,7 @@ import openai
 
 
 # Initialize your OpenAI API key
-openai.api_key = "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"
+openai.api_key = "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"
 
 
 # Global variables
